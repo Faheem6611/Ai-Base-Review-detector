@@ -170,53 +170,59 @@ if (contactFormElement) {
 
 }
 
-    // CHECK REVIEW
-    if (checkReviewForm) {
-        checkReviewForm.addEventListener('submit', async e => {
-            e.preventDefault();
-            const review = document.getElementById('review-text').value;
-            if (!review) return alert('Please enter a review.');
+    // ===============================
+// CHECK REVIEW WITH MODAL POPUP
+// ===============================
 
-            const res = await fetch('/api/check_review', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ review })
-            });
-            const data = await res.json();
-            alert(`Prediction: ${data.prediction} (Confidence: ${data.confidence})`);
-        });
+// Get modal and close button
+const modal = document.getElementById("reviewModal");
+const closeBtn = document.querySelector(".close");
+const checkBtn = document.getElementById("checkBtn");
+
+checkBtn.addEventListener("click", async (e) => {
+    e.preventDefault(); // prevent default form submission
+
+    const reviewText = document.getElementById("review-text").value.trim();
+    if (!reviewText) {
+        alert("Please enter a review!");
+        return;
     }
-    // Submit review and show result on page
-document.getElementById("check-review-form").addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const review = document.getElementById("review-text").value;
-    const resultDiv = document.getElementById("review-result");
-
-    // Clear previous result
-    resultDiv.innerHTML = "<p>Analyzing...</p>";
 
     try {
         const res = await fetch("/api/check_review", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ review })
+            body: JSON.stringify({ review: reviewText })
         });
 
         const data = await res.json();
 
-        if (data.error) {
-            resultDiv.innerHTML = `<p class="error">${data.error}</p>`;
+        if (res.ok) {
+            // Populate modal with data
+            document.getElementById("modalReview").textContent = data.review;
+            document.getElementById("modalPrediction").textContent = data.prediction;
+            document.getElementById("modalConfidence").textContent = data.confidence_percent;
+
+            // Show modal
+            modal.style.display = "block";
         } else {
-            resultDiv.innerHTML = `
-                <p><strong>Prediction:</strong> ${data.prediction}</p>
-                <p><strong>Confidence:</strong> ${data.confidence_percent ?? 0}%</p>
-            `;
+            alert(data.error || "Error analyzing review");
         }
-    } catch (error) {
-        resultDiv.innerHTML = `<p class="error">An error occurred. Please try again.</p>`;
+    } catch (err) {
+        console.error(err);
+        alert("Server error. Try again later.");
     }
 });
+
+// Close modal on click
+closeBtn.onclick = () => {
+    modal.style.display = "none";
+};
+
+// Close modal if user clicks outside
+window.onclick = (event) => {
+    if (event.target == modal) modal.style.display = "none";
+};
 
 
     // ==============================
@@ -268,5 +274,64 @@ document.getElementById("check-review-form").addEventListener("submit", async (e
         if (!hamburger.contains(e.target) && !navMenu.contains(e.target)) {
             navMenu.classList.remove('active');
         }
+        // ===============================
+// PROFILE ICON ACTIVATION
+// ===============================
+
+// After successful signup
+async function handleSignup(e) {
+    e.preventDefault();
+    const name = document.getElementById("signup-name").value;
+    const email = document.getElementById("signup-email").value;
+    const password = document.getElementById("signup-password").value;
+
+    const res = await fetch("/api/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password })
+    });
+
+    const data = await res.json();
+    if (data.success) {
+        // Show profile icon and name
+        document.getElementById("profile-pic").style.display = "inline-block";
+        document.getElementById("profile-name").textContent = name;
+
+        switchTab('home'); // Optional: redirect to home
+        alert(data.message);
+    } else {
+        alert(data.message);
+    }
+}
+
+// After successful login
+async function handleLogin(e) {
+    e.preventDefault();
+    const email = document.getElementById("login-email").value;
+    const password = document.getElementById("login-password").value;
+
+    const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+    });
+
+    const data = await res.json();
+    if (data.success) {
+        // Show profile icon and name
+        document.getElementById("profile-pic").style.display = "inline-block";
+        document.getElementById("profile-name").textContent = data.name;
+
+        switchTab('home');
+        alert(data.message);
+    } else {
+        alert(data.message);
+    }
+}
+
+// Add event listeners
+document.getElementById("signup-form").addEventListener("submit", handleSignup);
+document.getElementById("login-form").addEventListener("submit", handleLogin);
+
     });
 });

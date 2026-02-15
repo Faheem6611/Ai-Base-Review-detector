@@ -170,17 +170,27 @@
         </div>
 
         <!-- Check Review Tab -->
-       <div id="Check" class="tab-content">
+       <!-- Check Review Tab -->
+<div id="Check" class="tab-content">
     <h1>Check Review</h1>
     <form id="check-review-form">
         <div class="form-group">
             <label for="review-text">Paste Review Text Here:</label>
             <textarea id="review-text" name="review" rows="5" required></textarea>
         </div>
-        <button type="submit" class="contact-button">Submit</button>
+        <button type="submit" class="contact-button" id="checkBtn">Check Review</button>
     </form>
-    <!-- Add this div to display result -->
-    <div id="review-result" class="review-result"></div>
+
+    <!-- Modal for Review Result -->
+    <div id="reviewModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Review Analysis</h2>
+            <p><strong>Review:</strong> <span id="modalReview"></span></p>
+            <p><strong>Prediction:</strong> <span id="modalPrediction"></span></p>
+            <p><strong>Confidence:</strong> <span id="modalConfidence"></span>%</p>
+        </div>
+    </div>
 </div>
 
         <!-- Contact Tab -->

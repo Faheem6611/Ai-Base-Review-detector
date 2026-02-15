@@ -595,6 +595,51 @@ footer p {
     background: url('github-logo.png') no-repeat left center;
     padding-left: 25px; /* adjust according to icon size */
 }
+/* Modal Styles */
+.modal {
+    display: none; 
+    position: fixed; 
+    z-index: 100; 
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto; 
+    background-color: rgba(0,0,0,0.5); 
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 10% auto;
+    padding: 20px;
+    border-radius: 10px;
+    width: 80%;
+    max-width: 500px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    animation: slideDown 0.4s ease;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover { color: #000; }
+
+@keyframes slideDown {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+/* Profile name next to profile pic */
+#profile-name {
+    color: white;        
+    font-weight: bold;     
+    margin-left: 8px;      
+    display: inline-block; 
+}
 
 
 
