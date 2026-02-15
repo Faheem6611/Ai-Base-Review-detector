@@ -14,9 +14,8 @@ CORS(app)
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = 'muhammadfaheemiqbal297@gmail.com'
-app.config['MAIL_PASSWORD'] = 'Faheem@6611'
-app.config['MAIL_DEFAULT_SENDER'] = 'muhammadfaheemiqbal297@gmail.com'
+app.config['MAIL_USERNAME'] = os.environ.get("MAIL_USERNAME")
+app.config['MAIL_PASSWORD'] = os.environ.get("MAIL_PASSWORD")
 
 mail = Mail(app)
 # ===============================
@@ -204,4 +203,7 @@ Message:
 # RUN SERVER
 # ===============================
 if __name__ == "__main__":
-    app.run()
+    import os
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=True)
+
