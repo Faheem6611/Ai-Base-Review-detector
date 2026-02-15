@@ -57,7 +57,7 @@ print(f"\nTrain size: {len(X_train)}, Test size: {len(X_test)}")
 # ------------------------------
 # TF-IDF Vectorization
 # ------------------------------
-vectorizer = TfidfVectorizer(max_features=35000 , ngram_range=(1,2))
+vectorizer = TfidfVectorizer(max_features=40000 , ngram_range=(1,2))
 X_train_vec = vectorizer.fit_transform(X_train)
 X_test_vec = vectorizer.transform(X_test)
 
