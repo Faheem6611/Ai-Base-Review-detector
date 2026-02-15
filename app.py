@@ -1,29 +1,23 @@
-import os
-import pickle
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
-from flask_mail import Mail, Message
+import mail
 from werkzeug.security import generate_password_hash, check_password_hash
-
-# ===============================
-# APP SETUP
-# ===============================
+import os
+import pickle
+from flask_mail import Mail, Message
 app = Flask(__name__)
 CORS(app)
-
 # ===============================
-# EMAIL CONFIGURATION (Railway ENV)
+# EMAIL CONFIGURATION
 # ===============================
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
-app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
-app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_USERNAME')
+app.config['MAIL_USERNAME'] = os.environ.get("MAIL_USERNAME")
+app.config['MAIL_PASSWORD'] = os.environ.get("MAIL_PASSWORD")
 
 mail = Mail(app)
-
 # ===============================
 # DATABASE SETUP
 # ===============================
@@ -52,34 +46,30 @@ with app.app_context():
     db.create_all()
 
 # ===============================
-# LAZY LOAD AI MODEL
+# LOAD AI MODEL
 # ===============================
-vectorizer = None
-model = None
+with open("vectorizer.pkl", "rb") as f:
+    vectorizer = pickle.load(f)
 
+with open("fake_review_model.pkl", "rb") as f:
+    model = pickle.load(f)
+
+# Use integer keys because model.predict returns int
 label_map = {
     1: "Genuine Review ✅",
     0: "Fake Review ❌"
 }
 
-def load_model():
-    global vectorizer, model
-    if vectorizer is None or model is None:
-        with open("vectorizer.pkl", "rb") as f:
-            vectorizer = pickle.load(f)
-        with open("fake_review_model.pkl", "rb") as f:
-            model = pickle.load(f)
-
 # ===============================
-# ROUTES
+# FRONTEND ROUTE
 # ===============================
 @app.route("/")
 def home():
     return render_template("index.html")
 
-# -------------------------------
-# Check review API
-# -------------------------------
+# ===============================
+# CHECK REVIEW API
+# ===============================
 @app.route("/api/check_review", methods=["POST"])
 def check_review():
     data = request.get_json()
@@ -89,7 +79,6 @@ def check_review():
         return jsonify({"error": "No review text provided"}), 400
 
     try:
-        load_model()
         X = vectorizer.transform([review_text])
         prediction = int(model.predict(X)[0])
         human_label = label_map.get(prediction, str(prediction))
@@ -112,9 +101,9 @@ def check_review():
         print("Error in /api/check_review:", e)
         return jsonify({"error": "Failed to analyze review"}), 500
 
-# -------------------------------
-# Signup API
-# -------------------------------
+# ===============================
+# SIGNUP API
+# ===============================
 @app.route("/api/signup", methods=["POST"])
 def signup():
     data = request.get_json()
@@ -136,9 +125,9 @@ def signup():
 
     return jsonify({"success": True, "message": "Account created successfully"})
 
-# -------------------------------
-# Login API
-# -------------------------------
+# ===============================
+# LOGIN API
+# ===============================
 @app.route("/api/login", methods=["POST"])
 def login():
     data = request.get_json()
@@ -154,11 +143,12 @@ def login():
     else:
         return jsonify({"success": False, "message": "Invalid credentials"}), 401
 
-# -------------------------------
-# Contact API
-# -------------------------------
+# ===============================
+# CONTACT API
+# ===============================
 @app.route("/api/contact", methods=["POST"])
 def contact():
+
     data = request.get_json()
 
     name = data.get("name")
@@ -180,13 +170,15 @@ def contact():
     db.session.add(new_message)
     db.session.commit()
 
-    # Send email safely
+    # Send email
     try:
+
         msg = Message(
             subject=f"New Contact: {subject}",
             sender=app.config['MAIL_USERNAME'],
-            recipients=[app.config['MAIL_USERNAME']]
+            recipients=['muhammadfaheemiqbal297@gmail.com']
         )
+
         msg.body = f"""
 New Contact Message
 
@@ -197,16 +189,21 @@ Subject: {subject}
 Message:
 {message}
 """
+
         mail.send(msg)
 
     except Exception as e:
         print("Email error:", e)
 
-    return jsonify({"success": True, "message": "Message sent successfully"})
-
+    return jsonify({
+        "success": True,
+        "message": "Message sent successfully"
+    })
 # ===============================
-# RUN SERVER (local testing only)
+# RUN SERVER
 # ===============================
 if __name__ == "__main__":
+    import os
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=True)
+
